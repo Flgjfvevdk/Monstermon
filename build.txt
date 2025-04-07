@@ -1,0 +1,3 @@
+displayName = Monstermon - capture them all!
+author = Flgjfvevdk
+version = 0.1
