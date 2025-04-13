@@ -1,8 +1,35 @@
 # This file will automatically update with entries for new content after a build and reload.
 
 Items: {
-	TestSword: {
-		DisplayName: My tutorial sword
-		Tooltip: This is my first sword. I love it.
+	CaptureGun: {
+		DisplayName: Tranquilizer gun
+		Tooltip: Shoot what you want to capture.
+	}
+
+	CapturedMonster: {
+		Tooltip: What's Inside ?
+		DisplayName: Captured Monster
+	}
+
+	SuperCatcherSword: {
+		DisplayName: Super Catcher Sword
+		Tooltip: ""
+	}
+
+	Neutralizer: {
+		DisplayName: Neutralizer
+		Tooltip: ""
+	}
+}
+
+Projectiles: {
+	CaptureProjectile.DisplayName: Capture Projectile
+	InstantCaptureProjectile.DisplayName: Instant Capture Projectile
+}
+
+Buffs: {
+	CaptureReady: {
+		DisplayName: Capture Ready
+		Description: Mods.Monstermon.Buffs.CaptureReady.Description
 	}
 }
