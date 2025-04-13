@@ -100,9 +100,9 @@ namespace Monstermon.Content.Items
                         // Store the monster data in the newly created item
                         if (Main.item[itemIndex].ModItem is CapturedMonster capturedMonster)
                         {
-                            capturedMonster.CapturedNPCType = target.type;
-                            capturedMonster.CapturedNPCName = Lang.GetNPCNameValue(target.type);
-                            Main.NewText($"Caught {capturedMonster.CapturedNPCName}!", Color.LightGreen);
+                            capturedMonster.MonsterType = target.type;
+                            capturedMonster.MonsterName = Lang.GetNPCNameValue(target.type);
+                            Main.NewText($"Caught {capturedMonster.MonsterName}!", Color.LightGreen);
                         }
                         
                         // Play capture effect

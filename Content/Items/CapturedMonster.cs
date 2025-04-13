@@ -1,7 +1,7 @@
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
-using Terraria.GameContent.Creative;
+using Terraria.ModLoader.IO;
 using Microsoft.Xna.Framework;
 using Terraria.Audio;
 
@@ -9,8 +9,10 @@ namespace Monstermon.Content.Items
 {
     public class CapturedMonster : ModItem
     {
-        public int CapturedNPCType { get; set; }
-        public string CapturedNPCName { get; set; } = "Unknown";
+        public int MonsterType { get; set; }
+        public string MonsterName { get; set; } = "Unknown";
+        public int level { get; set; } = 1;
+        
 
         public override void SetDefaults()
         {
@@ -29,20 +31,20 @@ namespace Monstermon.Content.Items
         public override void ModifyTooltips(System.Collections.Generic.List<TooltipLine> tooltips)
         {
             // Add the name of the captured monster to the tooltip
-            tooltips.Add(new TooltipLine(Mod, "MonsterType", $"Contains: {CapturedNPCName}"));
+            tooltips.Add(new TooltipLine(Mod, "MonsterType", $"Contains: {MonsterName} - LVL: {level}"));
         }
 
         public override bool? UseItem(Player player)
         {
             // Spawn the captured NPC when the item is used
-            if (CapturedNPCType > 0)
+            if (MonsterType > 0)
             {
                 // Calculate spawn position in front of player
                 Vector2 spawnPos = player.Center;
                 spawnPos.X += player.direction * 50; // Spawn in front of player
                 
                 // Spawn the monster
-                NPC.NewNPC(Item.GetSource_FromThis(), (int)spawnPos.X, (int)spawnPos.Y, CapturedNPCType);
+                NPC.NewNPC(Item.GetSource_FromThis(), (int)spawnPos.X, (int)spawnPos.Y, MonsterType);
                 
                 // Play release effect
                 SoundEngine.PlaySound(SoundID.NPCDeath6, player.position);
@@ -55,6 +57,52 @@ namespace Monstermon.Content.Items
             }
             
             return false;
+        }
+
+        // Save data when the item is saved
+        public override void SaveData(TagCompound tag)
+        {
+            // Save the monster type as an integer
+            tag["MonsterType"] = MonsterType;
+            
+            // Save the monster name as a string
+            tag["MonsterName"] = MonsterName;
+            
+            // Save the monster level as an integer
+            tag["Level"] = level;
+        }
+
+        // Load data when the item is loaded
+        public override void LoadData(TagCompound tag)
+        {
+            // Load the monster type, default to 0 if not found
+            MonsterType = tag.GetInt("MonsterType");
+            
+            // Load the monster name, default to "Unknown" if not found
+            MonsterName = tag.GetString("MonsterName");
+            if (string.IsNullOrEmpty(MonsterName)){
+                // If name is missing but we have a valid type, try to get the name from the type
+                if (MonsterType > 0){
+                    MonsterName = Lang.GetNPCNameValue(MonsterType);
+                }
+                else{
+                    MonsterName = "Unknown";
+                }
+            }
+            
+            // Load the monster level, default to 1 if not found
+            level = tag.GetInt("Level");
+            if (level < 1) level = 1; // Ensure level is at least 1
+        }
+
+        // Override Clone to correctly copy our custom properties
+        public override ModItem Clone(Item item)
+        {
+            CapturedMonster clone = (CapturedMonster)base.Clone(item);
+            clone.MonsterType = this.MonsterType;
+            clone.MonsterName = this.MonsterName;
+            clone.level = this.level;
+            return clone;
         }
 
         public override void AddRecipes()
