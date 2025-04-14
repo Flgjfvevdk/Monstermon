@@ -46,8 +46,8 @@ namespace Monstermon.Content.Projectiles
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
             // Do not capture bosses, friends or target dummies.
-            bool canCapture = !target.boss && !target.friendly && target.lifeMax > 5 && target.type != NPCID.TargetDummy            // Don't mark bosses, friendly NPCs, or target dummies
-            
+            bool canCapture = !target.boss && !target.friendly && target.lifeMax > 5 && target.type != NPCID.TargetDummy;            // Don't mark bosses, friendly NPCs, or target dummies
+
             // Do not capture summoned monsters
             canCapture &= !(target.HasBuff<Buffs.Captured>());
             

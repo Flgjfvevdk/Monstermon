@@ -49,7 +49,7 @@ namespace Monstermon.Content.Projectiles
             try
             {
                 // Don't capture bosses, friendly NPCs, or target dummies
-                bool canCapture = (!target.boss && !target.friendly && target.lifeMax > 5 && target.type != NPCID.TargetDummy)
+                bool canCapture = (!target.boss && !target.friendly && target.lifeMax > 5 && target.type != NPCID.TargetDummy);
 
                 // Do not capture monsters belonging to other players
                 canCapture &= !(target.HasBuff<Buffs.Captured>());

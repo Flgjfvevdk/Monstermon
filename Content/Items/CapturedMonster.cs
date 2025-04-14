@@ -4,7 +4,8 @@ using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using Microsoft.Xna.Framework;
 using Terraria.Audio;
-using Monstermon.Content.Buffs.Captured;
+// using Monstermon.Content.Buffs.Captured;
+using Monstermon.Content.Buffs;
 
 namespace Monstermon.Content.Items
 {
@@ -38,11 +39,11 @@ namespace Monstermon.Content.Items
 
         public override bool? UseItem(Player player)
         {
-            // Call back the monster if it has already been summoned
-            if (deployedMonster is not null)
-            {
+            // // Call back the monster if it has already been summoned
+            // if (deployedMonster is not null)
+            // {
                 
-            }
+            // }
             // Spawn the captured NPC when the item is used
             if (MonsterType > 0)
             {
@@ -51,7 +52,7 @@ namespace Monstermon.Content.Items
                 spawnPos.X += player.direction * 50; // Spawn in front of player
                 
                 // Spawn the monster
-                NPC monster = NPC.NewNPC(Item.GetSource_FromThis(), (int)spawnPos.X, (int)spawnPos.Y, MonsterType);
+                NPC monster = NPC.NewNPCDirect(Item.GetSource_FromThis(), (int)spawnPos.X, (int)spawnPos.Y, MonsterType);
                 
                 // Play release effect
                 SoundEngine.PlaySound(SoundID.NPCDeath6, player.position);
@@ -61,9 +62,9 @@ namespace Monstermon.Content.Items
                 }
 
                 // Give the monster the "Captured" status effect.
-                monster.AddBuff(ModContent.BuffType<Captured>(),300);
+                monster.AddBuff(ModContent.BuffType<Buffs.Captured>(),300);
                 // Save The summoned monster, to call it back into his ball
-                deployedMonster = monster.WhoAmI;
+                deployedMonster = monster.whoAmI;
                 
                 return false; // Does not consume the item
             }
