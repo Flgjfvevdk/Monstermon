@@ -4,6 +4,7 @@ using Terraria.ModLoader;
 using Microsoft.Xna.Framework;
 using Terraria.Audio;
 using System;
+using Monstermon.Content.Buffs.Captured;
 
 namespace Monstermon.Content.Items
 { 
@@ -86,6 +87,7 @@ namespace Monstermon.Content.Items
                 if (!target.boss && !target.friendly && target.lifeMax > 5 && target.type != NPCID.TargetDummy)
                 {
                     bool shouldCapture = InstantCaptureMode || Main.rand.NextBool(3); // 100% in instant mode, 33% otherwise
+                    shouldCapture &= !(target.HasBuff<Captured>());
                     
                     if (shouldCapture)
                     {

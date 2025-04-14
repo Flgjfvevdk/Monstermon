@@ -32,4 +32,8 @@ Buffs: {
 		DisplayName: Capture Ready
 		Description: Mods.Monstermon.Buffs.CaptureReady.Description
 	}
+	Captured: {
+		DisplayName: Captured!
+		Description: This monster has been caught by a player.
+	}
 }
