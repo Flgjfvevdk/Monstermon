@@ -76,7 +76,7 @@ namespace Monstermon.Content.NPCs
             */
             if (npc.HasBuff(ModContent.BuffType<Captured>()))
             {
-                bool? retrieved = SummoningSystem.retrieve_summon(npc.whoAmI);
+                bool? retrieved = SummoningSystem.RetrieveSummon(npc.whoAmI);
                 // Do not kill entity if we are the client.
                 return retrieved ?? false;
             }

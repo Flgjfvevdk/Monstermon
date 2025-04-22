@@ -37,10 +37,10 @@ namespace Monstermon.Content.Items
         public override bool? UseItem(Player player)
         {
             // Call back the monster if it has already been summoned
-            if (SummoningSystem.has_summon(player))
-                return SummoningSystem.retrieve_summon(player);
+            if (SummoningSystem.HasSummon(player))
+                return SummoningSystem.RetrieveSummon(player);
             else
-                return SummoningSystem.summon_monster(player, this);
+                return SummoningSystem.SummonMonster(player, this);
         }
 
         // Save data when the item is saved

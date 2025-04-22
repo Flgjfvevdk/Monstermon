@@ -10,21 +10,21 @@ namespace Monstermon.Content.Items
 {
     public class SummoningSystem : ModSystem
     {
-        public static int?[] monster_to_player;
-        public static int?[] player_to_monster;
+        static int?[] monsterToPlayer;
+        static int?[] playerToMonster;
 
         public override void Load()
         {
-            monster_to_player = new int?[Main.maxPlayers];
-            player_to_monster = new int?[Main.maxNPCs];
+            monsterToPlayer = new int?[Main.maxPlayers];
+            playerToMonster = new int?[Main.maxNPCs];
         }
 
-        public static bool has_summon(Player player)
+        public static bool HasSummon(Player player)
         {
-            return player_to_monster[player.whoAmI] is int;
+            return playerToMonster[player.whoAmI] is int;
         }
 
-        public static bool? summon_monster(Player player, CapturedMonster item)
+        public static bool? SummonMonster(Player player, CapturedMonster item)
         {
             if (Main.netMode == NetmodeID.MultiplayerClient) return null;
 
@@ -50,8 +50,8 @@ namespace Monstermon.Content.Items
 
 
                 // Save the summoned monster, to retrieve him
-                player_to_monster[player.whoAmI] = monster.whoAmI;
-                monster_to_player[monster.whoAmI] = player.whoAmI;
+                playerToMonster[player.whoAmI] = monster.whoAmI;
+                monsterToPlayer[monster.whoAmI] = player.whoAmI;
 
                 return true;
             }
@@ -59,12 +59,12 @@ namespace Monstermon.Content.Items
             return false;
         }
 
-        public static bool? retrieve_summon(Player player)
+        public static bool? RetrieveSummon(Player player)
         {
             // Only execute this code on the server or in solo play.
             if (Main.netMode == NetmodeID.MultiplayerClient) return null;
 
-            if (player_to_monster[player.whoAmI] is int index && Main.npc[index] is NPC monster && monster.active)
+            if (playerToMonster[player.whoAmI] is int index && Main.npc[index] is NPC monster && monster.active)
             {
                 // Remove the buff because it should prevent the monster from despawning
                 int buffIndex = monster.FindBuffIndex(ModContent.BuffType<Captured>());
@@ -72,22 +72,22 @@ namespace Monstermon.Content.Items
                     monster.DelBuff(buffIndex);
 
                 monster.active = false;
-                monster_to_player[monster.whoAmI] = null;
-                player_to_monster[player.whoAmI] = null;
+                monsterToPlayer[monster.whoAmI] = null;
+                playerToMonster[player.whoAmI] = null;
                 return true;
             }
 
             return false;
         }
 
-        public static bool? retrieve_summon(int monster_id)
+        public static bool? RetrieveSummon(int monsterIdx)
         {
             // Only execute this code on the server or in solo play.
             if (Main.netMode != NetmodeID.MultiplayerClient) return null;
 
-            if (monster_to_player[monster_id] is int index && Main.player[index] is Player player && player.active)
+            if (monsterToPlayer[monsterIdx] is int index && Main.player[index] is Player player && player.active)
             {
-                return retrieve_summon(player);
+                return RetrieveSummon(player);
             }
 
             return false;
