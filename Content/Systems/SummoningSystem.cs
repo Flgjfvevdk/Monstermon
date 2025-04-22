@@ -64,7 +64,7 @@ namespace Monstermon.Content.Items
             // Only execute this code on the server or in solo play.
             if (Main.netMode == NetmodeID.MultiplayerClient) return null;
 
-            if (playerToMonster[player.whoAmI] is int index && Main.npc[index] is NPC monster && monster.active)
+            if (playerToMonster[player.whoAmI] is int index && Main.npc[index] is NPC monster)
             {
                 // Remove the buff because it should prevent the monster from despawning
                 int buffIndex = monster.FindBuffIndex(ModContent.BuffType<Captured>());
@@ -83,9 +83,9 @@ namespace Monstermon.Content.Items
         public static bool? RetrieveSummon(int monsterIdx)
         {
             // Only execute this code on the server or in solo play.
-            if (Main.netMode != NetmodeID.MultiplayerClient) return null;
+            if (Main.netMode == NetmodeID.MultiplayerClient) return null;
 
-            if (monsterToPlayer[monsterIdx] is int index && Main.player[index] is Player player && player.active)
+            if (monsterToPlayer[monsterIdx] is int index && Main.player[index] is Player player)
             {
                 return RetrieveSummon(player);
             }
