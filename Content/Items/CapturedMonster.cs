@@ -4,7 +4,6 @@ using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using Microsoft.Xna.Framework;
 using Terraria.Audio;
-// using Monstermon.Content.Buffs.Captured;
 using Monstermon.Content.Buffs;
 
 namespace Monstermon.Content.Items
@@ -14,8 +13,6 @@ namespace Monstermon.Content.Items
         public int MonsterType { get; set; }
         public string MonsterName { get; set; } = "Unknown";
         public int level { get; set; } = 1;
-        public int deployedMonster { get; set; }
-        //public int cooldown { get; set; } = 0;
 
         public override void SetDefaults()
         {
@@ -24,7 +21,7 @@ namespace Monstermon.Content.Items
             Item.maxStack = 1;
             Item.value = Item.sellPrice(silver: 5);
             Item.rare = ItemRarityID.Blue;
-            Item.useStyle = ItemUseStyleID.Swing;
+            Item.useStyle = ItemUseStyleID.HoldUp;
             Item.useTime = 20;
             Item.useAnimation = 20;
             Item.consumable = false;
@@ -39,37 +36,11 @@ namespace Monstermon.Content.Items
 
         public override bool? UseItem(Player player)
         {
-            // // Call back the monster if it has already been summoned
-            // if (deployedMonster is not null)
-            // {
-
-            // }
-            // Spawn the captured NPC when the item is used
-            if (MonsterType > 0)
-            {
-                // Calculate spawn position in front of player
-                Vector2 spawnPos = player.Center;
-                spawnPos.X += player.direction * 50; // Spawn in front of player
-
-                // Spawn the monster
-                NPC monster = NPC.NewNPCDirect(Item.GetSource_FromThis(), (int)spawnPos.X, (int)spawnPos.Y, MonsterType);
-
-                // Play release effect
-                SoundEngine.PlaySound(SoundID.NPCDeath6, player.position);
-                for (int i = 0; i < 15; i++)
-                {
-                    Dust.NewDust(spawnPos, 20, 20, DustID.MagicMirror, 0f, 0f, 150, default, 1.2f);
-                }
-
-                // Give the monster the "Captured" status effect.
-                monster.AddBuff(ModContent.BuffType<Buffs.Captured>(), 300);
-                // Save The summoned monster, to call it back into his ball
-                deployedMonster = monster.whoAmI;
-
-                return true; // Does not consume the item
-            }
-
-            return false;
+            // Call back the monster if it has already been summoned
+            if (SummoningSystem.has_summon(player))
+                return SummoningSystem.retrieve_summon(player);
+            else
+                return SummoningSystem.summon_monster(player, this);
         }
 
         // Save data when the item is saved
