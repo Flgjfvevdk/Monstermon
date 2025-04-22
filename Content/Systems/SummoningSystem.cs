@@ -26,7 +26,7 @@ namespace Monstermon.Content.Items
 
         public static bool? summon_monster(Player player, CapturedMonster item)
         {
-            if (Main.netMode != NetmodeID.MultiplayerClient) return null;
+            if (Main.netMode == NetmodeID.MultiplayerClient) return null;
 
             // Spawn the captured NPC when the item is used
             if (item.MonsterType > 0)
@@ -62,7 +62,7 @@ namespace Monstermon.Content.Items
         public static bool? retrieve_summon(Player player)
         {
             // Only execute this code on the server or in solo play.
-            if (Main.netMode != NetmodeID.MultiplayerClient) return null;
+            if (Main.netMode == NetmodeID.MultiplayerClient) return null;
 
             if (player_to_monster[player.whoAmI] is int index && Main.npc[index] is NPC monster && monster.active)
             {
@@ -71,7 +71,7 @@ namespace Monstermon.Content.Items
                 if (buffIndex >= 0)
                     monster.DelBuff(buffIndex);
 
-                monster.timeLeft = 0;
+                monster.active = false;
                 monster_to_player[monster.whoAmI] = null;
                 player_to_monster[player.whoAmI] = null;
                 return true;
