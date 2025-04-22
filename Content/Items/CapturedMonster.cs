@@ -27,7 +27,7 @@ namespace Monstermon.Content.Items
             Item.useStyle = ItemUseStyleID.Swing;
             Item.useTime = 20;
             Item.useAnimation = 20;
-            Item.consumable = true;
+            Item.consumable = false;
             Item.UseSound = SoundID.Item4;
         }
 
@@ -42,7 +42,7 @@ namespace Monstermon.Content.Items
             // // Call back the monster if it has already been summoned
             // if (deployedMonster is not null)
             // {
-                
+
             // }
             // Spawn the captured NPC when the item is used
             if (MonsterType > 0)
@@ -50,10 +50,10 @@ namespace Monstermon.Content.Items
                 // Calculate spawn position in front of player
                 Vector2 spawnPos = player.Center;
                 spawnPos.X += player.direction * 50; // Spawn in front of player
-                
+
                 // Spawn the monster
                 NPC monster = NPC.NewNPCDirect(Item.GetSource_FromThis(), (int)spawnPos.X, (int)spawnPos.Y, MonsterType);
-                
+
                 // Play release effect
                 SoundEngine.PlaySound(SoundID.NPCDeath6, player.position);
                 for (int i = 0; i < 15; i++)
@@ -62,13 +62,13 @@ namespace Monstermon.Content.Items
                 }
 
                 // Give the monster the "Captured" status effect.
-                monster.AddBuff(ModContent.BuffType<Buffs.Captured>(),300);
+                monster.AddBuff(ModContent.BuffType<Buffs.Captured>(), 300);
                 // Save The summoned monster, to call it back into his ball
                 deployedMonster = monster.whoAmI;
-                
-                return false; // Does not consume the item
+
+                return true; // Does not consume the item
             }
-            
+
             return false;
         }
 
@@ -77,10 +77,10 @@ namespace Monstermon.Content.Items
         {
             // Save the monster type as an integer
             tag["MonsterType"] = MonsterType;
-            
+
             // Save the monster name as a string
             tag["MonsterName"] = MonsterName;
-            
+
             // Save the monster level as an integer
             tag["Level"] = level;
         }
@@ -90,19 +90,22 @@ namespace Monstermon.Content.Items
         {
             // Load the monster type, default to 0 if not found
             MonsterType = tag.GetInt("MonsterType");
-            
+
             // Load the monster name, default to "Unknown" if not found
             MonsterName = tag.GetString("MonsterName");
-            if (string.IsNullOrEmpty(MonsterName)){
+            if (string.IsNullOrEmpty(MonsterName))
+            {
                 // If name is missing but we have a valid type, try to get the name from the type
-                if (MonsterType > 0){
+                if (MonsterType > 0)
+                {
                     MonsterName = Lang.GetNPCNameValue(MonsterType);
                 }
-                else{
+                else
+                {
                     MonsterName = "Unknown";
                 }
             }
-            
+
             // Load the monster level, default to 1 if not found
             level = tag.GetInt("Level");
             if (level < 1) level = 1; // Ensure level is at least 1
