@@ -1,1 +1,7 @@
+# VSCode files
+.vscode
+
+## Csharp project files
 obj/
+*.sln
+bin/
