@@ -5,6 +5,7 @@ using Terraria.ID;
 using Terraria.ModLoader;
 using Monstermon.Content.Buffs;
 using Monstermon.Content.Items;
+using Monstermon.Content.Systems;
 
 namespace Monstermon.Content.NPCs
 {

@@ -5,8 +5,9 @@ using Terraria.ModLoader.IO;
 using Microsoft.Xna.Framework;
 using Terraria.Audio;
 using Monstermon.Content.Buffs;
+using Monstermon.Content.Items;
 
-namespace Monstermon.Content.Items
+namespace Monstermon.Content.Systems
 {
     public class SummoningSystem : ModSystem
     {
