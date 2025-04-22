@@ -33,8 +33,8 @@ namespace Monstermon.Content.Projectiles
             // Create a trail of dust particles
             if (Main.rand.NextBool(2))
             {
-                Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, 
-                    DustID.MagicMirror, Projectile.velocity.X * 0.2f, Projectile.velocity.Y * 0.2f, 
+                Dust.NewDust(Projectile.position, Projectile.width, Projectile.height,
+                    DustID.MagicMirror, Projectile.velocity.X * 0.2f, Projectile.velocity.Y * 0.2f,
                     100, default, 1.2f);
             }
 
@@ -45,7 +45,7 @@ namespace Monstermon.Content.Projectiles
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
             Main.NewText("Projectile hit detected!", Color.Yellow);
-            
+
             try
             {
                 // Don't capture bosses, friendly NPCs, or target dummies
@@ -53,22 +53,22 @@ namespace Monstermon.Content.Projectiles
 
                 // Do not capture monsters belonging to other players
                 canCapture &= !(target.HasBuff<Buffs.Captured>());
-                
+
                 if (canCapture)
                 {
                     // You can adjust this capture chance as needed
                     bool shouldCapture = true; // Always capture with the gun
-                    
+
                     if (shouldCapture)
                     {
                         Main.NewText($"Capturing {Lang.GetNPCNameValue(target.type)}!", Color.LightBlue);
-                        
+
                         // Create a captured monster item
                         int capturedMonsterItemType = ModContent.ItemType<CapturedMonster>();
-                        
+
                         // Spawn the captured monster item at the target's position
                         int itemIndex = Item.NewItem(target.GetSource_Death(), target.getRect(), capturedMonsterItemType);
-                        
+
                         // Store the monster data in the newly created item
                         if (Main.item[itemIndex].ModItem is CapturedMonster capturedMonster)
                         {
@@ -76,16 +76,16 @@ namespace Monstermon.Content.Projectiles
                             capturedMonster.MonsterName = Lang.GetNPCNameValue(target.type);
                             Main.NewText($"Caught {capturedMonster.MonsterName}!", Color.LightGreen);
                         }
-                        
+
                         // Play capture effect
                         SoundEngine.PlaySound(SoundID.Item4, target.position);
                         for (int i = 0; i < 30; i++)
                         {
                             Vector2 dustVelocity = Vector2.UnitX.RotatedBy(Main.rand.NextFloat() * MathHelper.TwoPi) * Main.rand.NextFloat(3f);
-                            Dust.NewDust(target.position, target.width, target.height, DustID.MagicMirror, 
+                            Dust.NewDust(target.position, target.width, target.height, DustID.MagicMirror,
                                 dustVelocity.X, dustVelocity.Y, 150, default, 1.5f);
                         }
-                        
+
                         // Remove the captured NPC
                         target.life = 0;
                         target.HitEffect();
@@ -108,13 +108,13 @@ namespace Monstermon.Content.Projectiles
             // Create dust effect when the projectile is destroyed
             for (int i = 0; i < 10; i++)
             {
-                Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, 
+                Dust.NewDust(Projectile.position, Projectile.width, Projectile.height,
                     DustID.MagicMirror, 0f, 0f, 100, default, 1f);
             }
-            
+
             SoundEngine.PlaySound(SoundID.Item10, Projectile.position);
         }
-        
+
         // Make the projectile look cooler
         public override Color? GetAlpha(Color lightColor)
         {

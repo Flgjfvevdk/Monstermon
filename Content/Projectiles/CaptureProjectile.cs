@@ -34,8 +34,8 @@ namespace Monstermon.Content.Projectiles
             // Create a trail of dust particles
             if (Main.rand.NextBool(2))
             {
-                Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, 
-                    DustID.MagicMirror, Projectile.velocity.X * 0.2f, Projectile.velocity.Y * 0.2f, 
+                Dust.NewDust(Projectile.position, Projectile.width, Projectile.height,
+                    DustID.MagicMirror, Projectile.velocity.X * 0.2f, Projectile.velocity.Y * 0.2f,
                     100, default, 1.2f);
             }
 
@@ -50,21 +50,21 @@ namespace Monstermon.Content.Projectiles
 
             // Do not capture summoned monsters
             canCapture &= !(target.HasBuff<Buffs.Captured>());
-            
+
             if (canCapture)
             {
                 // Apply capture-ready buff
                 int buffType = ModContent.BuffType<CaptureReady>();
                 target.AddBuff(buffType, 60 * 30); // 30 seconds duration
-                
+
                 Main.NewText($"{Lang.GetNPCNameValue(target.type)} is now ready to be captured!", Color.LightBlue);
-                
+
                 // Visual and sound effects
                 SoundEngine.PlaySound(SoundID.Item4, target.position);
                 for (int i = 0; i < 15; i++)
                 {
                     Vector2 dustVelocity = Vector2.UnitX.RotatedBy(Main.rand.NextFloat() * MathHelper.TwoPi) * Main.rand.NextFloat(3f);
-                    Dust.NewDust(target.position, target.width, target.height, DustID.MagicMirror, 
+                    Dust.NewDust(target.position, target.width, target.height, DustID.MagicMirror,
                         dustVelocity.X, dustVelocity.Y, 100, default, 1.2f);
                 }
             }
@@ -79,13 +79,13 @@ namespace Monstermon.Content.Projectiles
             // Create dust effect when the projectile is destroyed
             for (int i = 0; i < 10; i++)
             {
-                Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, 
+                Dust.NewDust(Projectile.position, Projectile.width, Projectile.height,
                     DustID.MagicMirror, 0f, 0f, 100, default, 1f);
             }
-            
+
             SoundEngine.PlaySound(SoundID.Item10, Projectile.position);
         }
-        
+
         // Make the projectile look cooler
         public override Color? GetAlpha(Color lightColor)
         {
