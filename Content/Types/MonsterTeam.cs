@@ -1,4 +1,6 @@
 using Monstermon.Content.Items;
+using Terraria;
+using Terraria.DataStructures;
 using Terraria.ModLoader.IO;
 
 namespace Monstermon.Content.Types
@@ -6,21 +8,15 @@ namespace Monstermon.Content.Types
     public class MonsterTeam : TagSerializable
     {
         public static readonly System.Func<TagCompound, MonsterTeam> DESERIALIZER = Load;
-        public CapturedMonster?[] slots;
-        public TeamType teamType;
-
-        public MonsterTeam()
-        {
-            slots = new CapturedMonster?[3];
-            teamType = TeamType.OneOneOne;
-        }
+        public Item[] slots = [new(), new(), new(),];
+        public TeamType teamType = TeamType.OneOneOne;
 
         public bool AddMonster(CapturedMonster item, int slotIdx, bool force_swap = false)
         {
             // For now, all monsters take up one slot
             if (slots[slotIdx] is null)
             {
-                slots[slotIdx] = item;
+                slots[slotIdx] = item.Item;
                 return true;
             }
             return false;
@@ -30,6 +26,9 @@ namespace Monstermon.Content.Types
         {
             var team = new MonsterTeam();
             team.teamType = (TeamType)tag.GetInt("type");
+            if (tag.TryGet("slots", out Item[] n_slots))
+                team.slots = n_slots;
+
             return team;
         }
 
