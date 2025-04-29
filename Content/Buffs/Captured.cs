@@ -28,6 +28,9 @@ namespace Monstermon.Content.Buffs
 
         public override void Update(NPC npc, ref int buffIndex)
         {
+            // Make the NPC friendly to players (won't damage them)
+            npc.friendly = true;
+
             // Visual effect to show the NPC is marked for capture
             if (Main.rand.NextBool(5))
             {
