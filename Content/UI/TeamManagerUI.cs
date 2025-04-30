@@ -1,8 +1,14 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Monstermon.Content.Items;
+using Monstermon.Content.Types;
 using ReLogic.Content;
+using ReLogic.Graphics;
+using SteelSeries.GameSense;
 using Terraria;
+using Terraria.GameContent;
 using Terraria.GameContent.UI.Elements;
+using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.UI;
@@ -15,7 +21,8 @@ namespace Monstermon.Content.UI.TeamManager
     internal class TeamManagerUIState : UIState
     {
         public UIPanel teamManagerPanel;
-        public UIItemSlot slot_ui;
+
+        private UITeamSlots teamSlots;
 
         // In OnInitialize, we place various UIElements onto our UIState (this class).
         // UIState classes have width and height equal to the full screen, because of this, usually we first define a UIElement that will act as the container for our UI.
@@ -36,18 +43,13 @@ namespace Monstermon.Content.UI.TeamManager
             displayText.Top.Set(10f, 0);
             teamManagerPanel.Append(displayText);
 
-            // By properly nesting UIElements, we can position things relatively to each other easily.
-            for (int i = 0; i < 3; i++)
-            {
-                slot_ui = new(Main.LocalPlayer.GetModPlayer<Trainer>().team.slots, i, ItemSlot.Context.InventoryItem);
-                SetRectangle(slot_ui, left: 10f + i * 60f, top: 50f, width: 50f, height: 50f);
-                teamManagerPanel.Append(slot_ui);
-            }
+            teamSlots = new UITeamSlots(Main.LocalPlayer.GetModPlayer<Trainer>().team);
+            teamSlots.Top.Set(30f, 0f);
+            teamSlots.Left.Set(20f, 0f);
+
+            teamManagerPanel.Append(teamSlots);
 
             Append(teamManagerPanel);
-            // As a recap, ExampleCoinsUI is a UIState, meaning it covers the whole screen. We attach teamManagerPanel to ExampleCoinsUI some distance from the top left corner.
-            // We then place playButton, closeButton, and MoneyDisplay onto teamManagerPanel so we can easily place these UIElements relative to teamManagerPanel.
-            // Since teamManagerPanel will move, this proper organization will move playButton, closeButton, and MoneyDisplay properly when teamManagerPanel moves.
         }
 
         private void SetRectangle(UIElement uiElement, float left, float top, float width, float height)
@@ -64,27 +66,87 @@ namespace Monstermon.Content.UI.TeamManager
         }
     }
 
-    // public class Team : UIElement
-    // {
-    //     public UITeamSlot()
-    //     {
+    public class UITeamSlots : UIElement
+    {
+        private MonsterTeam team;
+        private float _slotMarginSize;
+        private float _slotInnerSize;
 
-    //     }
+        public UITeamSlots(MonsterTeam team)
+        {
+            _slotInnerSize = TextureAssets.InventoryBack9.Size().X;
+            _slotMarginSize = 56f - _slotInnerSize; // from Terraria source code (Terraria.Main.DrawInventory)
+            Width = new StyleDimension((2 + MonsterTeam.TEAMSIZE) * _slotMarginSize + MonsterTeam.TEAMSIZE * _slotInnerSize, 0f);
+            Height = new StyleDimension(48f, 0f);
+            this.team = team;
+        }
 
-    //     /*protected override void DrawSelf(SpriteBatch spriteBatch)
-    //     {
-    //         CalculatedStyle innerDimensions = GetInnerDimensions();
-    //         // Getting top left position of this UIElement
-    //         float shopx = innerDimensions.X;
-    //         float shopy = innerDimensions.Y;
+        protected override void DrawSelf(SpriteBatch spriteBatch)
+        {
+            float _scale = Main.inventoryScale;
+            Main.inventoryScale = 0.85f; // from Terraria code (Terraria.Main.DrawInventory)
 
-    //         // Drawing first line of coins (current collected coins)
-    //         // CoinsSplit converts the number of copper coins into an array of all types of coins
-    //         DrawCoins(spriteBatch, shopx, shopy, Utils.CoinsSplit(collectedCoins));
+            HandleSlotLogic();
 
-    //         // Drawing second line of coins (coins per minute) and text "CPM"
-    //         DrawCoins(spriteBatch, shopx, shopy, Utils.CoinsSplit(GetCoinsPerMinute()), 0, 25);
-    //         Utils.DrawBorderStringFourWay(spriteBatch, FontAssets.ItemStack.Value, "CPM", shopx + (float)(24 * 4), shopy + 25f, Color.White, Color.Black, new Vector2(0.3f), 0.75f);
-    //     }*/
-    // }
+            Vector2 position = GetDimensions().Position();
+            Vector2 scale = Vector2.One * Main.inventoryScale;
+            for (int i = 0; i < MonsterTeam.TEAMSIZE; i++)
+            {
+                spriteBatch.Draw(TextureAssets.InventoryBack9.Value, position, null, Main.inventoryBack, 0f, default, scale, SpriteEffects.None, 0f);
+                if (!team.IsValidSlot(i))
+                {
+                    spriteBatch.Draw(TextureAssets.MapDeath.Value, position, null, Color.White, 0f, default, scale, SpriteEffects.None, 0f);
+                }
+                else if (team.slots[i].type != ItemID.None)
+                {
+                    ItemSlot.DrawItemIcon(team.slots[i], 0, spriteBatch, position + scale * (_slotInnerSize / 2f), Main.inventoryScale, 32f, Color.White);
+                }
+
+                position.X += 56f * Main.inventoryScale;
+            }
+            Main.inventoryScale = _scale;
+        }
+        private void HandleSlotLogic()
+        {
+            if (base.IsMouseHovering)
+            {
+                Main.LocalPlayer.mouseInterface = true;
+                LeftClick();
+            }
+        }
+
+        private void LeftClick()
+        {
+            if (!(Main.mouseLeftRelease && Main.mouseLeft))
+                return;
+            if (HoveredSlot() is not int slot)
+                return;
+
+            bool canDropItem = Main.mouseItem.ModItem is CapturedMonster && team.IsValidSlot(slot);
+            bool canTakeItem = !team.slots[slot].IsAir;
+
+            if (!canDropItem && !canTakeItem)
+                return;
+
+            Utils.Swap(ref team.slots[slot], ref Main.mouseItem);
+        }
+
+        private int? HoveredSlot()
+        {
+            if (!base.IsMouseHovering)
+                return null;
+
+            Vector2 pos = GetDimensions().Position();
+            Vector2 m = Main.MouseScreen;
+
+            if (m.Y < pos.Y || m.Y > pos.Y + GetDimensions().Height * Main.inventoryScale || m.X < pos.X)
+                return null;
+
+            int i = (int)((m.X - pos.X) / ((_slotInnerSize + _slotMarginSize) * Main.inventoryScale));
+
+            if (m.X - pos.X - i * (_slotInnerSize + _slotMarginSize) * Main.inventoryScale < _slotInnerSize * Main.inventoryScale)
+                return i;
+            return null;
+        }
+    }
 }

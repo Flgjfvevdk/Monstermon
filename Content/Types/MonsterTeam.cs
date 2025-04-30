@@ -10,6 +10,7 @@ namespace Monstermon.Content.Types
         public static readonly System.Func<TagCompound, MonsterTeam> DESERIALIZER = Load;
         public Item[] slots = [new(), new(), new(),];
         public TeamType teamType = TeamType.OneOneOne;
+        public const int TEAMSIZE = 3;
 
         public bool AddMonster(CapturedMonster item, int slotIdx, bool force_swap = false)
         {
@@ -39,6 +40,23 @@ namespace Monstermon.Content.Types
                 ["slots"] = slots,
                 ["type"] = (int)teamType
             };
+        }
+
+        public bool IsValidSlot(int slotIdx)
+        {
+            switch (teamType)
+            {
+                case TeamType.OneOneOne:
+                    return true;
+                case TeamType.OneTwo:
+                    return slotIdx != 2;
+                case TeamType.TwoOne:
+                    return slotIdx != 1;
+                case TeamType.Three:
+                    return slotIdx == 0;
+                default:
+                    return false;
+            }
         }
     }
 
