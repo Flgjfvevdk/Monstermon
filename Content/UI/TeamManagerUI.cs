@@ -11,6 +11,7 @@ using Terraria.GameContent.UI.Elements;
 using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
+using Terraria.ModLoader.UI;
 using Terraria.UI;
 
 namespace Monstermon.Content.UI.TeamManager
@@ -45,9 +46,8 @@ namespace Monstermon.Content.UI.TeamManager
 
             teamSlots = new UITeamSlots(Main.LocalPlayer.GetModPlayer<Trainer>().team);
             teamSlots.Top.Set(30f, 0f);
-            teamSlots.Left.Set(20f, 0f);
+            //teamSlots.Left.Set(20f, 0f);
             teamSlots.HAlign = 0.5f;
-
             teamManagerPanel.Append(teamSlots);
 
             Append(teamManagerPanel);
@@ -60,11 +60,6 @@ namespace Monstermon.Content.UI.TeamManager
             uiElement.Width.Set(width, 0f);
             uiElement.Height.Set(height, 0f);
         }
-
-        public void UpdateValue(int pickedUp)
-        {
-
-        }
     }
 
     public class UITeamSlots : UIElement
@@ -75,42 +70,38 @@ namespace Monstermon.Content.UI.TeamManager
 
         public UITeamSlots(MonsterTeam team)
         {
-            _slotInnerSize = TextureAssets.InventoryBack9.Size().X;
+            _slotInnerSize = TextureAssets.InventoryBack9.Size().X; //should be 48f according to terraria source code
             _slotMarginSize = 56f - _slotInnerSize; // from Terraria source code (Terraria.Main.DrawInventory)
-            Width = new StyleDimension((2 + MonsterTeam.TEAMSIZE) * _slotMarginSize + MonsterTeam.TEAMSIZE * _slotInnerSize, 0f);
+            Width = new StyleDimension((MonsterTeam.TEAMSIZE - 1) * _slotMarginSize + MonsterTeam.TEAMSIZE * _slotInnerSize, 0f);
             Height = new StyleDimension(48f, 0f);
             this.team = team;
         }
 
         protected override void DrawSelf(SpriteBatch spriteBatch)
         {
-            float _scale = Main.inventoryScale;
+            float _previousScale = Main.inventoryScale;
             Main.inventoryScale = 0.85f; // from Terraria code (Terraria.Main.DrawInventory)
 
             HandleSlotLogic();
 
             Vector2 position = GetDimensions().Position();
+            position.X += (3 - team.EffectiveSize()) * (_slotMarginSize / 2f);
+
             Vector2 scale = Vector2.One * Main.inventoryScale;
             for (int i = 0; i < MonsterTeam.TEAMSIZE; i++)
             {
                 switch (team.teamType)
                 {
-                    case TeamType.OneOneOne:
-                        scale = Vector2.One * Main.inventoryScale;
-                        break;
                     case TeamType.OneTwo:
-                        if (i == 1)
-                        {
-                            position += new Vector2(i * 56f, 0f) * Main.inventoryScale;
-                            scale = Vector2.One * Main.inventoryScale;
-                        }
-                        else
-                        {
-                            position += new Vector2(i * 56f, 0f) * Main.inventoryScale;
-                            scale = new Vector2(2f, 1f) * Main.inventoryScale;
-                            i += 1;
-                        }
+                        scale.X = (i == 0 ? 1f : 2f) * Main.inventoryScale;
                         break;
+                    case TeamType.TwoOne:
+                        scale.X = (i == 0 ? 2f : 1f) * Main.inventoryScale;
+                        break;
+                    case TeamType.Three:
+                        scale.X = 3f * Main.inventoryScale;
+                        break;
+
                 }
                 spriteBatch.Draw(TextureAssets.InventoryBack9.Value, position, null, Main.inventoryBack, 0f, default, scale, SpriteEffects.None, 0f);
                 if (!team.IsValidSlot(i))
@@ -122,9 +113,13 @@ namespace Monstermon.Content.UI.TeamManager
                     ItemSlot.DrawItemIcon(team.slots[i], 0, spriteBatch, position + scale * (_slotInnerSize / 2f), Main.inventoryScale, 32f, Color.White);
                 }
 
-                position.X += scale.X * _slotInnerSize + _slotMarginSize;
+                position.X += scale.X * (_slotInnerSize) + _slotMarginSize * Main.inventoryScale;
+                if ((i == 1 && team.teamType is TeamType.OneTwo) || (i == 0 && team.teamType is TeamType.TwoOne))
+                    i++;
+                if (team.teamType is TeamType.Three)
+                    i += 2;
             }
-            Main.inventoryScale = _scale;
+            Main.inventoryScale = _previousScale;
         }
         private void HandleSlotLogic()
         {
@@ -156,16 +151,47 @@ namespace Monstermon.Content.UI.TeamManager
             if (!base.IsMouseHovering)
                 return null;
 
-            Vector2 pos = GetDimensions().Position();
+            Vector2 position = GetDimensions().Position();
+            position.X += (3 - team.EffectiveSize()) * (_slotMarginSize / 2f);
             Vector2 m = Main.MouseScreen;
 
-            if (m.Y < pos.Y || m.Y > pos.Y + GetDimensions().Height * Main.inventoryScale || m.X < pos.X)
+            if (m.Y < position.Y || m.Y > position.Y + GetDimensions().Height * Main.inventoryScale || m.X < position.X || m.X > position.X + GetDimensions().Width * Main.inventoryScale)
                 return null;
 
-            int i = (int)((m.X - pos.X) / ((_slotInnerSize + _slotMarginSize) * Main.inventoryScale));
 
-            if (m.X - pos.X - i * (_slotInnerSize + _slotMarginSize) * Main.inventoryScale < _slotInnerSize * Main.inventoryScale)
-                return i;
+            for (int i = 0; i < MonsterTeam.TEAMSIZE; i++)
+            {
+                float slotWidth;
+                switch (team.teamType)
+                {
+                    case TeamType.OneTwo:
+                        slotWidth = (i == 0 ? 1f : 2f);
+                        break;
+                    case TeamType.TwoOne:
+                        slotWidth = (i == 0 ? 2f : 1f);
+                        break;
+                    case TeamType.Three:
+                        slotWidth = 3f;
+                        break;
+                    default:
+                        slotWidth = 1f;
+                        break;
+
+                }
+                slotWidth *= Main.inventoryScale * _slotInnerSize;
+
+                if (m.X - position.X < slotWidth)
+                {
+                    return i;
+                }
+
+                position.X += slotWidth + _slotMarginSize * Main.inventoryScale;
+                if ((i == 1 && team.teamType is TeamType.OneTwo) || (i == 0 && team.teamType is TeamType.TwoOne))
+                    i++;
+                if (team.teamType is TeamType.Three)
+                    i += 2;
+            }
+
             return null;
         }
     }
