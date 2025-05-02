@@ -30,7 +30,7 @@ namespace Monstermon.Content.Systems
             if (Main.netMode == NetmodeID.MultiplayerClient) return null;
 
             // Spawn the captured NPC when the item is used
-            if (item.MonsterType > 0)
+            if (item.MonsterType != NPCID.None)
             {
                 // Calculate spawn position in front of player
                 Vector2 spawnPos = player.Center;

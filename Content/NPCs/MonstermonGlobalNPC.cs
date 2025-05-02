@@ -21,7 +21,7 @@ namespace Monstermon.Content.NPCs
             // Check if the NPC is marked for capture (has the capture-ready buff)
             if (npc.HasBuff(ModContent.BuffType<CaptureReady>()))
             {
-                Main.NewText($"Capturing {Lang.GetNPCNameValue(npc.type)}!", Color.LightGreen);
+                Main.NewText($"Capturing {Lang.GetNPCNameValue(npc.netID)}!", Color.LightGreen);
 
                 // Create a captured monster item
                 int capturedMonsterItemType = ModContent.ItemType<CapturedMonster>();
@@ -32,8 +32,8 @@ namespace Monstermon.Content.NPCs
                 // Store the monster data in the newly created item
                 if (Main.item[itemIndex].ModItem is CapturedMonster capturedMonster)
                 {
-                    capturedMonster.MonsterType = npc.type;
-                    capturedMonster.MonsterName = Lang.GetNPCNameValue(npc.type);
+                    capturedMonster.MonsterType = npc.netID;
+                    capturedMonster.MonsterName = Lang.GetNPCNameValue(npc.netID);
                     Main.NewText($"Successfully caught {capturedMonster.MonsterName}!", Color.LightGreen);
                 }
 
