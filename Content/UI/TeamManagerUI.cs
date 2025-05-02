@@ -137,19 +137,20 @@ namespace Monstermon.Content.UI.TeamManager
         {
             if (base.IsMouseHovering)
             {
+                // Need to be over a slot.
+                if (HoveredSlot() is not int slot)
+                    return;
+
                 Main.LocalPlayer.mouseInterface = true;
-                LeftClick();
+                Hovering(slot);
+                LeftClick(slot);
             }
         }
 
-        private void LeftClick()
+        private void LeftClick(int slot)
         {
             // Need left click.
             if (!(Main.mouseLeftRelease && Main.mouseLeft))
-                return;
-
-            // Need to be over a slot.
-            if (HoveredSlot() is not int slot)
                 return;
 
             // Need not to have a summoned monster to do changes.
@@ -163,6 +164,23 @@ namespace Monstermon.Content.UI.TeamManager
                 return;
 
             Utils.Swap(ref team.slots[slot], ref Main.mouseItem);
+        }
+
+        private void Hovering(int slot)
+        {
+            if (team.slots[slot].ModItem is CapturedMonster cm)
+            {
+                if (SummoningSystem.HasSummon(Main.LocalPlayer))
+                {
+                    UICommon.TooltipMouseText("Cannot change team when a monster is summoned.");
+                }
+                else
+                {
+                    Main.hoverItemName = cm.MonsterName;
+                    var item = cm.Item.Clone();
+                    Main.HoverItem = item;
+                }
+            }
         }
 
         private int? HoveredSlot()
