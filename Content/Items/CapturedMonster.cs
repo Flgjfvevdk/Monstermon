@@ -27,6 +27,8 @@ namespace Monstermon.Content.Items
             Item.useAnimation = 20;
             Item.consumable = false;
             Item.UseSound = SoundID.Item4;
+            Item.noUseGraphic = true;
+            Item.noMelee = true;
         }
 
         public override void ModifyTooltips(System.Collections.Generic.List<TooltipLine> tooltips)
@@ -37,11 +39,7 @@ namespace Monstermon.Content.Items
 
         public override bool? UseItem(Player player)
         {
-            // Call back the monster if it has already been summoned
-            if (SummoningSystem.HasSummon(player))
-                return SummoningSystem.RetrieveSummon(player);
-            else
-                return SummoningSystem.SummonMonster(player, this);
+            return false;
         }
 
         // Save data when the item is saved

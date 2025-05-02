@@ -72,6 +72,16 @@ namespace Monstermon.Content.Types
                     return 3;
             }
         }
+
+        public CapturedMonster? FirstMonster()
+        {
+            foreach (var slot in slots)
+            {
+                if (slot.ModItem is CapturedMonster item)
+                    return item;
+            }
+            return null;
+        }
     }
 
     public enum TeamType

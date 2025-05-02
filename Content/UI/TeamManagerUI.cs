@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Monstermon.Content.Items;
+using Monstermon.Content.Systems;
 using Monstermon.Content.Types;
 using ReLogic.Content;
 using ReLogic.Graphics;
@@ -11,6 +12,7 @@ using Terraria.GameContent.UI.Elements;
 using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
+using Terraria.ModLoader.Config;
 using Terraria.ModLoader.UI;
 using Terraria.UI;
 
@@ -50,6 +52,13 @@ namespace Monstermon.Content.UI.TeamManager
             teamSlots.HAlign = 0.5f;
             teamManagerPanel.Append(teamSlots);
 
+            var summonButton = new UISummonButton();
+            summonButton.Top.Set(85f, 0f);
+            summonButton.Height.Set(30f, 0f);
+            summonButton.Width.Set(0f, 0.45f);
+            summonButton.HAlign = 0.5f;
+            teamManagerPanel.Append(summonButton);
+            summonButton.Recalculate();
             Append(teamManagerPanel);
         }
 
@@ -72,8 +81,8 @@ namespace Monstermon.Content.UI.TeamManager
         {
             _slotInnerSize = TextureAssets.InventoryBack9.Size().X; //should be 48f according to terraria source code
             _slotMarginSize = 56f - _slotInnerSize; // from Terraria source code (Terraria.Main.DrawInventory)
-            Width = new StyleDimension((MonsterTeam.TEAMSIZE - 1) * _slotMarginSize + MonsterTeam.TEAMSIZE * _slotInnerSize, 0f);
-            Height = new StyleDimension(48f, 0f);
+            Width = new StyleDimension(((MonsterTeam.TEAMSIZE - 1) * _slotMarginSize + MonsterTeam.TEAMSIZE * _slotInnerSize) * 0.85f, 0f);
+            Height = new StyleDimension(_slotInnerSize * 0.85f, 0f);
             this.team = team;
         }
 
@@ -86,6 +95,9 @@ namespace Monstermon.Content.UI.TeamManager
 
             Vector2 position = GetDimensions().Position();
             position.X += (3 - team.EffectiveSize()) * (_slotMarginSize / 2f);
+
+            Color backColor = SummoningSystem.HasSummon(Main.LocalPlayer) ? Main.inventoryBack * 0.5f : Main.inventoryBack;
+            Color itemColor = SummoningSystem.HasSummon(Main.LocalPlayer) ? Color.White * 0.5f : Color.White;
 
             Vector2 scale = Vector2.One * Main.inventoryScale;
             for (int i = 0; i < MonsterTeam.TEAMSIZE; i++)
@@ -103,14 +115,14 @@ namespace Monstermon.Content.UI.TeamManager
                         break;
 
                 }
-                spriteBatch.Draw(TextureAssets.InventoryBack9.Value, position, null, Main.inventoryBack, 0f, default, scale, SpriteEffects.None, 0f);
+                spriteBatch.Draw(TextureAssets.InventoryBack9.Value, position, null, backColor, 0f, default, scale, SpriteEffects.None, 0f);
                 if (!team.IsValidSlot(i))
                 {
                     spriteBatch.Draw(TextureAssets.MapDeath.Value, position, null, Color.White, 0f, default, scale, SpriteEffects.None, 0f);
                 }
                 else if (team.slots[i].type != ItemID.None)
                 {
-                    ItemSlot.DrawItemIcon(team.slots[i], 0, spriteBatch, position + scale * (_slotInnerSize / 2f), Main.inventoryScale, 32f, Color.White);
+                    ItemSlot.DrawItemIcon(team.slots[i], 0, spriteBatch, position + scale * (_slotInnerSize / 2f), Main.inventoryScale, 32f, itemColor);
                 }
 
                 position.X += scale.X * (_slotInnerSize) + _slotMarginSize * Main.inventoryScale;
@@ -132,9 +144,16 @@ namespace Monstermon.Content.UI.TeamManager
 
         private void LeftClick()
         {
+            // Need left click.
             if (!(Main.mouseLeftRelease && Main.mouseLeft))
                 return;
+
+            // Need to be over a slot.
             if (HoveredSlot() is not int slot)
+                return;
+
+            // Need not to have a summoned monster to do changes.
+            if (SummoningSystem.HasSummon(Main.LocalPlayer))
                 return;
 
             bool canDropItem = Main.mouseItem.ModItem is CapturedMonster && team.IsValidSlot(slot);
@@ -155,7 +174,7 @@ namespace Monstermon.Content.UI.TeamManager
             position.X += (3 - team.EffectiveSize()) * (_slotMarginSize / 2f);
             Vector2 m = Main.MouseScreen;
 
-            if (m.Y < position.Y || m.Y > position.Y + GetDimensions().Height * Main.inventoryScale || m.X < position.X || m.X > position.X + GetDimensions().Width * Main.inventoryScale)
+            if (m.Y < position.Y || m.Y > position.Y + GetDimensions().Height || m.X < position.X || m.X > position.X + GetDimensions().Width)
                 return null;
 
 
@@ -195,4 +214,62 @@ namespace Monstermon.Content.UI.TeamManager
             return null;
         }
     }
+
+    public class UISummonButton : UIButton<string>
+    {
+        private readonly Player player;
+
+        public UISummonButton() : base("")
+        {
+            player = Main.LocalPlayer;
+            SetText(SummoningSystem.HasSummon(player) ? "Retrieve" : "Summon");
+            UseAltColors = () => player.GetModPlayer<Trainer>().team.FirstMonster() is null;
+            Color panelDisabled = this.BackgroundColor * 0.8f;
+            AltPanelColor = panelDisabled;
+            AltHoverPanelColor = panelDisabled;
+            Color borderDisabled = this.BorderColor * 0.8f;
+            AltBorderColor = borderDisabled;
+            AltHoverBorderColor = borderDisabled;
+
+            AltHoverText = "You need at least one monster";
+            TooltipText = true;
+        }
+
+        public override void LeftClick(UIMouseEvent evt)
+        {
+            if (player.GetModPlayer<Trainer>().team.FirstMonster() is null)
+            {
+                return;
+            }
+            base.LeftClick(evt);
+            ToggleSummon();
+        }
+
+        public override void Draw(SpriteBatch spriteBatch)
+        {
+            UpdateValues();
+            base.Draw(spriteBatch);
+        }
+
+        private void UpdateValues()
+        {
+            var useAlt = UseAltColors();
+            TextColor = useAlt ? Color.White * 0.5f : Color.White;
+            SetText(SummoningSystem.HasSummon(player) ? "Retrieve" : "Summon");
+        }
+
+        private void ToggleSummon()
+        {
+            // Call back the monster if it has already been summoned
+            if (SummoningSystem.HasSummon(player))
+                SummoningSystem.RetrieveSummon(player);
+            else
+            {
+                var capturedMonster = player.GetModPlayer<Trainer>().team.FirstMonster();
+                SummoningSystem.SummonMonster(player, capturedMonster);
+            }
+        }
+
+    }
+
 }
