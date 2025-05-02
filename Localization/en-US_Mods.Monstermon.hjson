@@ -39,4 +39,12 @@ Buffs: {
 	}
 }
 
-UI.TeamManager.TeamDisplayText: Your team
+UI: {
+	TeamManager: {
+		TeamDisplayText: Your team
+		TeamSummonMonster: Summon
+		TeamRetrieveMonster: Retrieve
+		TooltipCannotChangeTeam: Cannot change team when a monster is summoned.
+		TooltipCannotSummonMonster: You need at least one monster.
+	}
+}

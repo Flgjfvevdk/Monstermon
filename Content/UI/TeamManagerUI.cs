@@ -77,6 +77,8 @@ namespace Monstermon.Content.UI.TeamManager
         private float _slotMarginSize;
         private float _slotInnerSize;
 
+        private static LocalizedText TooltipCannotChangeTeam;
+
         public UITeamSlots(MonsterTeam team)
         {
             _slotInnerSize = TextureAssets.InventoryBack9.Size().X; //should be 48f according to terraria source code
@@ -84,6 +86,8 @@ namespace Monstermon.Content.UI.TeamManager
             Width = new StyleDimension(((MonsterTeam.TEAMSIZE - 1) * _slotMarginSize + MonsterTeam.TEAMSIZE * _slotInnerSize) * 0.85f, 0f);
             Height = new StyleDimension(_slotInnerSize * 0.85f, 0f);
             this.team = team;
+
+            TooltipCannotChangeTeam = Language.GetText("Mods.Monstermon.UI.TeamManager.TooltipCannotChangeTeam");
         }
 
         protected override void DrawSelf(SpriteBatch spriteBatch)
@@ -172,7 +176,7 @@ namespace Monstermon.Content.UI.TeamManager
             {
                 if (SummoningSystem.HasSummon(Main.LocalPlayer))
                 {
-                    UICommon.TooltipMouseText("Cannot change team when a monster is summoned.");
+                    UICommon.TooltipMouseText(TooltipCannotChangeTeam.Value);
                 }
                 else
                 {
@@ -237,10 +241,13 @@ namespace Monstermon.Content.UI.TeamManager
     {
         private readonly Player player;
 
+        private static LocalizedText TeamRetrieveMonster;
+        private static LocalizedText TeamSummonMonster;
+        private static LocalizedText TooltipCannotSummonMonster;
+
         public UISummonButton() : base("")
         {
             player = Main.LocalPlayer;
-            SetText(SummoningSystem.HasSummon(player) ? "Retrieve" : "Summon");
             UseAltColors = () => player.GetModPlayer<Trainer>().team.FirstMonster() is null;
             Color panelDisabled = this.BackgroundColor * 0.8f;
             AltPanelColor = panelDisabled;
@@ -249,8 +256,11 @@ namespace Monstermon.Content.UI.TeamManager
             AltBorderColor = borderDisabled;
             AltHoverBorderColor = borderDisabled;
 
-            AltHoverText = "You need at least one monster";
+            AltHoverText = Language.GetTextValue("");
             TooltipText = true;
+            TeamRetrieveMonster = Language.GetText("Mods.Monstermon.UI.TeamManager.TeamRetrieveMonster");
+            TeamSummonMonster = Language.GetText("Mods.Monstermon.UI.TeamManager.TeamSummonMonster");
+            TooltipCannotSummonMonster = Language.GetText("Mods.Monstermon.UI.TeamManager.TooltipCannotSummonMonster");
         }
 
         public override void LeftClick(UIMouseEvent evt)
@@ -273,7 +283,9 @@ namespace Monstermon.Content.UI.TeamManager
         {
             var useAlt = UseAltColors();
             TextColor = useAlt ? Color.White * 0.5f : Color.White;
-            SetText(SummoningSystem.HasSummon(player) ? "Retrieve" : "Summon");
+            SetText(SummoningSystem.HasSummon(player) ? TeamRetrieveMonster.Value : TeamSummonMonster.Value);
+
+            AltHoverText = TooltipCannotSummonMonster.Value;
         }
 
         private void ToggleSummon()
