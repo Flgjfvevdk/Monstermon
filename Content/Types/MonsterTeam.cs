@@ -58,6 +58,20 @@ namespace Monstermon.Content.Types
                     return false;
             }
         }
+
+        public int EffectiveSize()
+        {
+            switch (teamType)
+            {
+                case TeamType.OneTwo:
+                case TeamType.TwoOne:
+                    return 2;
+                case TeamType.Three:
+                    return 1;
+                default:
+                    return 3;
+            }
+        }
     }
 
     public enum TeamType
