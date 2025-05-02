@@ -42,10 +42,10 @@ namespace Monstermon.Content.UI.TeamManager
         // Setting the InterfaceScaleType to UI for appropriate UI scaling
         public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
         {
-            int mouseTextIndex = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Inventory"));
-            if (mouseTextIndex != -1)
+            int inventoryLayerIndex = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Inventory"));
+            if (inventoryLayerIndex != -1)
             {
-                layers.Insert(mouseTextIndex, new LegacyGameInterfaceLayer(
+                layers.Insert(inventoryLayerIndex + 1, new LegacyGameInterfaceLayer(
                     "MonsterAlchemy: Team",
                     delegate
                     {
