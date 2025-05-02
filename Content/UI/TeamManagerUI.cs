@@ -46,6 +46,7 @@ namespace Monstermon.Content.UI.TeamManager
             teamSlots = new UITeamSlots(Main.LocalPlayer.GetModPlayer<Trainer>().team);
             teamSlots.Top.Set(30f, 0f);
             teamSlots.Left.Set(20f, 0f);
+            teamSlots.HAlign = 0.5f;
 
             teamManagerPanel.Append(teamSlots);
 
@@ -92,6 +93,25 @@ namespace Monstermon.Content.UI.TeamManager
             Vector2 scale = Vector2.One * Main.inventoryScale;
             for (int i = 0; i < MonsterTeam.TEAMSIZE; i++)
             {
+                switch (team.teamType)
+                {
+                    case TeamType.OneOneOne:
+                        scale = Vector2.One * Main.inventoryScale;
+                        break;
+                    case TeamType.OneTwo:
+                        if (i == 1)
+                        {
+                            position += new Vector2(i * 56f, 0f) * Main.inventoryScale;
+                            scale = Vector2.One * Main.inventoryScale;
+                        }
+                        else
+                        {
+                            position += new Vector2(i * 56f, 0f) * Main.inventoryScale;
+                            scale = new Vector2(2f, 1f) * Main.inventoryScale;
+                            i += 1;
+                        }
+                        break;
+                }
                 spriteBatch.Draw(TextureAssets.InventoryBack9.Value, position, null, Main.inventoryBack, 0f, default, scale, SpriteEffects.None, 0f);
                 if (!team.IsValidSlot(i))
                 {
@@ -102,7 +122,7 @@ namespace Monstermon.Content.UI.TeamManager
                     ItemSlot.DrawItemIcon(team.slots[i], 0, spriteBatch, position + scale * (_slotInnerSize / 2f), Main.inventoryScale, 32f, Color.White);
                 }
 
-                position.X += 56f * Main.inventoryScale;
+                position.X += scale.X * _slotInnerSize + _slotMarginSize;
             }
             Main.inventoryScale = _scale;
         }
